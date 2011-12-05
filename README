@@ -1,7 +1,6 @@
-This is a google product like application that will help you find the best music deals out in the internet. It fetches results from amazon, itunes and google music and displays the results to the user.
+This is a survey application built for the Open Source Tools class.
+It is built using the google app engine with webapp framework support. It also makes use of the google datastore.
 
-Also, users will be able to set alerts when the price falls below a certain value and and get emails when that happens.
+This application enables users to log in using their google account and access their surveys. They can view publicly available surveys, vote on them, create new surveys and share it with friends etc.
 
-Users can also rate the music and videos that they have rented or bought.
-
-This is Deal Finder.
+More features to be added.
