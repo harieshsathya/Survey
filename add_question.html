@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      function validate()
+      {
+        option1 = document.forms["new_question"]["option1"].value;
+        option2 = document.forms["new_question"]["option2"].value;
+        if(option1 == null || option1 == "" || option2 == null || option2 == "")
+        {
+          alert("Question needs atleast 2 options");
+          return false;
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <H1><center> Survey Elephant </center></H1>
+    <form name="new_question" method="get" action="/add_question" onsubmit="return validate()">
+    Question: <input type="text" name="question" size="150"><br>
+    Option 1: <input type="text" name="option1" size="50"><br>
+    Option 2: <input type="text" name="option2" size="50"><br>
+    Option 3: <input type="text" name="option3" size="50"><br>
+    Option 4: <input type="text" name="option4" size="50"><br>
+    <input type="hidden" name="survey_id" value="{{ survey_id }}"> 
+    <input type="submit" value="Add another question">
+    <input type="submit" value="Finish">
+    <br><br>
+    <a href="{{ url }}">{{ url_linktext }}</a><br>
+  </body>
+</html>
