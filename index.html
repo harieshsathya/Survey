@@ -1,6 +1,9 @@
 <html>
   <body>
     <H1><center> Survey Elephant </center></H1>
+    {% if survey_id %}
+      <font size="20" color="red"> New Survey Added! </font><br>
+    {% endif %}
     <a href="/create">Create a New Survey</a><br>
     <a href="/my_survey">View my existing surveys</a><br>
     <a href="/all_survey">View all existing surveys</a><br>
