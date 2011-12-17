@@ -1,0 +1,21 @@
+<html>
+  <body>
+    <H1><center> Survey Elephant </center></H1>
+    <H2>
+    Survey Name:
+    {{ survey_name }}
+    </H2>
+    {% for survey in surveys %}
+      {{ survey.question }}<br>
+      {% for answer in survey.answers %}
+        {{ answer }}<br>
+      {% endfor %}
+      <br><br>
+    {% endfor %}
+      <br><br>
+    <form name="display_current" method="get" action="/">
+    <input type="submit" name="submit" value="Home">
+    <br><br>
+    <a href="{{ url }}">{{ url_linktext }}</a><br>
+  </body>
+</html>

@@ -19,6 +19,7 @@ class Survey(db.Model):
   survey_name = db.StringProperty(required=True)
   user = db.UserProperty(required=True,auto_current_user_add=True)
   date = db.DateTimeProperty(auto_now_add=True)
+  status = db.StringProperty(default='incomplete')
 
 class SurveyDesc(db.Model):
   """Models an individual Guestbook entry with an author, content, and date."""
@@ -35,9 +36,15 @@ class MainPage(webapp.RequestHandler):
   def get(self):
     current_user = users.get_current_user()
     if current_user:
-      current_user_info = UserInfo()
-      current_user_info.user = current_user;
-      current_user_info.put()
+      user_query = db.GqlQuery("SELECT * "
+                               "FROM UserInfo "
+                               "WHERE user = :1 ",
+                               current_user)
+      if not user_query:
+        current_user_info = UserInfo()
+        current_user_info.user = current_user;
+        current_user_info.put()
+
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -54,21 +61,60 @@ class MainPage(webapp.RequestHandler):
 
 
 class MySurvey(webapp.RequestHandler):
-  def post(self):
-    # We set the same parent key on the 'Greeting' to ensure each greeting is in
-    # the same entity group. Queries across the single entity group will be
-    # consistent. However, the write rate to a single entity group should
-    # be limited to ~1/second.
-    pass
-#    guestbook_name = self.request.get('guestbook_name')
-#    greeting = Greeting(parent=guestbook_key(guestbook_name))
+  def get(self):
+    current_user = users.get_current_user()
+    if current_user:
+      survey_query = Survey.all().ancestor(Survey_Key(current_user.email())).order('-date')
+      all_survey = survey_query.fetch(200)
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
 
-#    if users.get_current_user():
-#      greeting.author = users.get_current_user()
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'surveys': all_survey,
+    }
 
-#    greeting.content = self.request.get('content')
-#    greeting.put()
-#    self.redirect('/?' + urllib.urlencode({'guestbook_name': guestbook_name}))
+    path = os.path.join(os.path.dirname(__file__), 'display_survey.html')
+    self.response.out.write(template.render(path, template_values))
+
+  
+class ViewMySurvey(webapp.RequestHandler):
+  def get(self):
+    current_user = users.get_current_user()
+    if current_user:
+      survey_desc_query = SurveyDesc.all().ancestor(Survey_Key(current_user.email()))
+      all_survey_desc = survey_desc_query.fetch(200)
+      current_survey = []
+      for survey in all_survey_desc:
+        if survey.survey_id == str(self.request.get('group1')):
+          current_survey.append(survey)
+
+      survey_query = Survey.all().ancestor(Survey_Key(current_user.email()))
+      all_survey = survey_query.fetch(200)
+      for survey in all_survey:
+        date = str(survey.date)
+        if(date == str(self.request.get('group1'))):
+          current_survey_name = survey.survey_name
+
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'surveys': current_survey,
+      'survey_name': current_survey_name,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')
+    self.response.out.write(template.render(path, template_values))
 
 
 class CreateSurvey(webapp.RequestHandler):
@@ -141,6 +187,17 @@ class AddQuestion(webapp.RequestHandler):
     
     
     if( self.request.get('submit') == "Finish"):
+      all_survey = db.GqlQuery("SELECT * "
+                               "FROM Survey "
+                               "WHERE ANCESTOR IS :1 ",
+                               Survey_Key(current_user.email()))
+      
+      for survey in all_survey:
+        date = str(survey.date)
+        if( date == self.request.get('survey_id') ):
+          survey.status="complete"
+          survey.put()
+          break
       path = os.path.join(os.path.dirname(__file__), 'index.html')
       self.response.out.write(template.render(path, template_values))
     else:
@@ -151,16 +208,18 @@ class AddQuestion(webapp.RequestHandler):
 class AddSurvey(webapp.RequestHandler):
   def get(self):
     current_user = users.get_current_user()
+    current_survey_name = str(self.request.get('survey_name'))
     if current_user:
       new_survey = Survey(
           parent=Survey_Key(current_user.email()),
-          survey_name=self.request.get('survey_name')
+          survey_name=current_survey_name
           )
       new_survey.put()
       survey_query = Survey.all().ancestor(Survey_Key(current_user.email())).order('-date')
       last_survey = survey_query.fetch(1)
       for survey in last_survey:
         last_survey_date = survey.date
+        ss_name = survey.survey_name
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -179,6 +238,7 @@ class AddSurvey(webapp.RequestHandler):
 application = webapp.WSGIApplication([
   ('/', MainPage),
   ('/my_survey', MySurvey),
+  ('/view_my_survey', ViewMySurvey),
   ('/all_survey', AllSurvey),
   ('/create', CreateSurvey),
   ('/add_survey', AddSurvey),
