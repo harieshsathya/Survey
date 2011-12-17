@@ -136,8 +136,60 @@ class CreateSurvey(webapp.RequestHandler):
     self.response.out.write(template.render(path, template_values))
 
 class AllSurvey(webapp.RequestHandler):
-  def post(self):
-    pass
+  def get(self): 
+    current_user = users.get_current_user()
+    if current_user:
+      survey_query = Survey.all().order('-date')
+      all_survey = survey_query.fetch(200)
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'surveys': all_survey,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'display_survey.html')
+    self.response.out.write(template.render(path, template_values))
+
+class ViewAllSurvey(webapp.RequestHandler):
+  def get(self):
+    current_user = users.get_current_user()
+    if current_user:
+      survey_desc_query = SurveyDesc.all()
+      all_survey_desc = survey_desc_query.fetch(2000)
+      current_survey = []
+      for survey in all_survey_desc:
+        if survey.survey_id == str(self.request.get('group1')):
+          current_survey.append(survey)
+
+      survey_query = Survey.all()
+      all_survey = survey_query.fetch(2000)
+      for survey in all_survey:
+        date = str(survey.date)
+        if(date == str(self.request.get('group1'))):
+          current_survey_name = survey.survey_name
+
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'surveys': current_survey,
+      'survey_name': current_survey_name,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')
+    self.response.out.write(template.render(path, template_values))
+
 
 class Results(webapp.RequestHandler):
   def post(self):
@@ -240,6 +292,7 @@ application = webapp.WSGIApplication([
   ('/my_survey', MySurvey),
   ('/view_my_survey', ViewMySurvey),
   ('/all_survey', AllSurvey),
+  ('/view_all_survey', ViewAllSurvey),
   ('/create', CreateSurvey),
   ('/add_survey', AddSurvey),
   ('/view_completed', Results),

@@ -1,14 +1,39 @@
 <html>
+  <head>
+    <script type="text/javascript">
+      function validate()
+      {
+        option = document.forms["view_my_survey"]["group1"].value;
+        if(option == null || option == "")
+        {
+          alert("One survey needs to be selected");
+          return false;
+        }
+      }
+    </script>
+  </head>
   <body>
     <H1><center> Survey Elephant </center></H1>
-    <form name="view_my_survey" method="get" action="/view_my_survey">
+    <form method="get" action="/">
+    <input type="submit" value="Home"><br>
+    </form>
+    <form name="view_my_survey" method="get" action="/view_my_survey" onsubmit="return validate()">
     <font color="Green"><b>Published Surveys</b></font><br>
     {% for survey in surveys %}
       {% ifequal survey.status "complete" %}
         <input type="radio" name="group1" value="{{ survey.date }}"> {{ survey.survey_name }} <br>
       {% endifequal %}
     {% endfor %}
-    <input type="submit" value="View Survey"><br>
+    <font color="red"><b>UnPublished Surveys</b></font><br>
+    {% for survey in surveys %}
+      {% ifequal survey.status "incomplete" %}
+        <input type="radio" name="group1" value="{{ survey.date }}"> {{ survey.survey_name }} <br>
+      {% endifequal %}
+    {% endfor %}
+    <br>
+    {% if surveys %}
+      <input type="submit" value="View Survey"><br>
+    {% endif %}
     <a href="{{ url }}">{{ url_linktext }}</a><br>
   </body>
 </html>
