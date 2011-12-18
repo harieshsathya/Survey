@@ -137,7 +137,28 @@ class VoteSurvey(webapp.RequestHandler):
     current_user = users.get_current_user()
     if current_user:
       survey_query = Survey.all().order('-date')
-      all_survey = survey_query.fetch(200)
+      all_survey = survey_query.fetch(2000)
+      current_survey = []
+      finished_survey = []
+
+      for survey in all_survey:
+        flag=True
+        user_query = UserVoteRecord.all().ancestor(question_key(str(survey.date)))
+        reg_user = user_query.fetch(1)
+        if reg_user:
+          flag=True
+          for item in reg_user:
+            for user_det in item.users:
+              if user_det.email() == current_user.email():
+                flag=False
+                break
+          if flag:
+            current_survey.append(survey)
+          else:
+            finished_survey.append(survey)
+        else:
+          current_survey.append(survey)
+
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -147,7 +168,8 @@ class VoteSurvey(webapp.RequestHandler):
     template_values = {
       'url': url,
       'url_linktext': url_linktext,
-      'surveys': all_survey,
+      'surveys': current_survey,
+      'finished_surveys': finished_survey,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'vote_survey.html')
@@ -252,6 +274,21 @@ class RegisterVote(webapp.RequestHandler):
     else:
       url = users.create_login_url(self.request.uri)
       url_linktext = 'Login'
+
+    reg_user_query = UserVoteRecord.all().ancestor(question_key(current_survey_id))
+    reg_user = reg_user_query.fetch(2000)
+    
+    if reg_user:
+      for id in reg_user:
+        if id.survey_id == current_survey_id:
+          id.users.append(current_user)
+          id.put()
+          break
+    else:
+      new_reg = UserVoteRecord(parent=question_key(current_survey_id))
+      new_reg.survey_id = current_survey_id
+      new_reg.users.append(current_user)
+      new_reg.put()
 
     template_values = {
       'url': url,

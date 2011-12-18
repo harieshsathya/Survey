@@ -6,17 +6,25 @@
     </form>
     <form name="view_my_survey" method="get" action="/view_my_survey">
     <font color="Green"><b>Published Surveys</b></font><br>
-    {% for survey in surveys %}
-      {% ifequal survey.status "complete" %}
-        <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
-      {% endifequal %}
-    {% endfor %}
+    {% if surveys %}
+      {% for survey in surveys %}
+        {% ifequal survey.status "complete" %}
+          <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
+        {% endifequal %}
+      {% endfor %}
+    {% else %}
+      <font color="red">No Surveys Created! </font><br><br>
+    {% endif %}
     <font color="red"><b>UnPublished Surveys</b></font><br>
-    {% for survey in surveys %}
-      {% ifequal survey.status "incomplete" %}
-        <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
-      {% endifequal %}
-    {% endfor %}
+    {% if surveys %}
+      {% for survey in surveys %}
+        {% ifequal survey.status "incomplete" %}
+          <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
+        {% endifequal %}
+      {% endfor %}
+    {% else %}
+      <font color="red">No Surveys Created! </font>
+    {% endif %}
     <br>
     {% if surveys %}
       <input type="submit" value="View Survey"><br>

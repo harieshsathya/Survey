@@ -11,9 +11,22 @@
         <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
       {% endifequal %}
     {% endfor %}
+    <br>
     {% if surveys %}
       <input type="submit" value="Vote"><br>
     {% endif %}
+    <br><br>
+    <font color="blue"><b>Attempted Surveys</b></font><br>
+    {% if finished_surveys %}
+      {% for survey in finished_surveys %}
+        {% ifequal survey.status "complete" %}
+          {{ survey.survey_name }} <br>
+        {% endifequal %}
+      {% endfor %}
+    {% else %}
+      <font color="red"> None Attempted! </font><br>
+    {% endif %}
+    <br>
     <a href="{{ url }}">{{ url_linktext }}</a><br>
   </body>
 </html>
