@@ -367,6 +367,24 @@ class CreateSurvey(webapp.RequestHandler):
     path = os.path.join(os.path.dirname(__file__), 'create_survey.html')
     self.response.out.write(template.render(path, template_values))
 
+class SearchPage(webapp.RequestHandler):
+  def get(self):
+    current_user = users.get_current_user()
+    if current_user:
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'search.html')
+    self.response.out.write(template.render(path, template_values))
+
 class AllSurvey(webapp.RequestHandler):
   def get(self): 
     current_user = users.get_current_user()
@@ -433,7 +451,7 @@ class Results(webapp.RequestHandler):
     current_user = users.get_current_user()
     if current_user:
       survey_query = Survey.all().order('-date')
-      all_survey = survey_query.fetch(200)
+      all_survey = survey_query.fetch(2000)
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -599,6 +617,37 @@ class AddSurvey(webapp.RequestHandler):
     path = os.path.join(os.path.dirname(__file__), 'add_question.html')
     self.response.out.write(template.render(path, template_values))
 
+class SearchQuery(webapp.RequestHandler):
+  def get(self):
+    current_user = users.get_current_user()
+    req_survey_name = self.request.get('query')
+    if current_user:
+      survey_query = Survey.all().order('-date')
+      all_survey = survey_query.fetch(2000)
+      
+      find_survey = []
+
+      for survey in all_survey:
+        cur_name = survey.survey_name
+        if cur_name.find(req_survey_name) != -1:
+          find_survey.append(survey)
+
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'surveys': find_survey,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'search_survey_result.html')
+    self.response.out.write(template.render(path, template_values))
+
+
 application = webapp.WSGIApplication([
   ('/', MainPage),
   ('/my_survey', MySurvey),
@@ -613,7 +662,9 @@ application = webapp.WSGIApplication([
   ('/vote', VoteSurvey),
   ('/vote_my_survey', VoteMySurvey),
   ('/vote_current', RegisterVote),
-  ('/edit_survey', EditSurvey)
+  ('/edit_survey', EditSurvey),
+  ('/search', SearchPage),
+  ('/search_query', SearchQuery),
 ], debug=True)
 
 

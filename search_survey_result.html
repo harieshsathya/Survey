@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <H1><center> Survey Elephant </center></H1>
+    <form method="get" action="/">
+    <input type="submit" value="Home"><br>
+    </form>
+    <form name="view_my_survey" method="get" action="/view_all_survey">
+    <font color="Green"><b>Published Surveys</b></font><br>
+    {% if surveys %}
+      {% for survey in surveys %}
+        {% ifequal survey.status "complete" %}
+          <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }}
+          - Created by {{survey.user.email }} <br>
+        {% endifequal %}
+      {% endfor %}
+    {% else %}
+      <font color="red">No Surveys Found</font><br>
+    {% endif %}
+    <br>
+    {% if surveys %}
+      <input type="submit" value="View Survey"><br>
+    {% endif %}
+    <a href="{{ url }}">{{ url_linktext }}</a><br>
+  </body>
+</html>
