@@ -9,7 +9,8 @@
     {% if surveys %}
       {% for survey in surveys %}
         {% ifequal survey.status "complete" %}
-          <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }} <br>
+          <input type="radio" name="group1" value="{{ survey.date }}" checked> {{ survey.survey_name }}
+          - Created by {{survey.user.email }} <br>
         {% endifequal %}
       {% endfor %}
     {% else %}

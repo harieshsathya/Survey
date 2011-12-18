@@ -127,9 +127,40 @@ class ViewMySurvey(webapp.RequestHandler):
       'url_linktext': url_linktext,
       'surveys': current_survey,
       'survey_name': current_survey_name,
+      'survey_id': self.request.get('group1'),
     }
 
     path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')
+    self.response.out.write(template.render(path, template_values))
+
+
+class EditSurvey(webapp.RequestHandler):
+  def get(self):
+    current_user = users.get_current_user()
+    current_survey_id = self.request.get('survey_id')
+    if current_user:
+      survey_query = Survey.all().ancestor(Survey_Key(current_user.email())).order('-date')
+      survey_list = survey_query.fetch(2000)
+      for survey in survey_list:
+        if str(survey.date) == current_survey_id:
+          current_survey_name=survey.survey_name
+          survey.status="deleted"
+          survey.put()
+          break
+
+      url = users.create_logout_url(self.request.uri)
+      url_linktext = 'Logout'
+    else:
+      url = users.create_login_url(self.request.uri)
+      url_linktext = 'Login'
+
+    template_values = {
+      'url': url,
+      'url_linktext': url_linktext,
+      'delete_survey_name': current_survey_name,
+    }
+
+    path = os.path.join(os.path.dirname(__file__), 'index.html')
     self.response.out.write(template.render(path, template_values))
 
 class VoteSurvey(webapp.RequestHandler):
@@ -513,7 +544,6 @@ class AddSurvey(webapp.RequestHandler):
       last_survey = survey_query.fetch(1)
       for survey in last_survey:
         last_survey_date = survey.date
-        ss_name = survey.survey_name
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -542,7 +572,8 @@ application = webapp.WSGIApplication([
   ('/add_question', AddQuestion),
   ('/vote', VoteSurvey),
   ('/vote_my_survey', VoteMySurvey),
-  ('/vote_current', RegisterVote)
+  ('/vote_current', RegisterVote),
+  ('/edit_survey', EditSurvey)
 ], debug=True)
 
 

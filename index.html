@@ -7,6 +7,9 @@
     {% if survey_name %}
       <font size="20" color="red"> Votes Registered! </font><br>
     {% endif %}
+    {% if delete_survey_name %}
+      <font size="20" color="red">Survey: {{ delete_survey_name }} was deleted! </font><br>
+    {% endif %}
     <a href="/create">Create a New Survey</a><br>
     <a href="/vote">Take a survey</a><br>
     <a href="/my_survey">View my existing surveys</a><br>

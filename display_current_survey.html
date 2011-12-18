@@ -5,6 +5,14 @@
     Survey Name:
     {{ survey_name }}
     </H2>
+    <H3>
+    {% if survey_id %}
+      <form method="get" action="/edit_survey">
+        <input type="hidden" name="survey_id" value="{{ survey_id }}">
+        <input type="submit" value="Delete this survey">
+      </form>
+    {% endif %}
+    </H3>
     {% for survey in surveys %}
       {{ survey.qno }}.
       {{ survey.question }}<br>
