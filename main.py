@@ -40,6 +40,12 @@ class UserVoteRecord(db.Model):
   survey_id = db.StringProperty()
   users = db.ListProperty(users.User)
 
+class CommentRecord(db.Model):
+  survey_id = db.StringProperty()
+  user = db.UserProperty(auto_current_user_add=True)
+  comment = db.TextProperty()
+  date = db.DateTimeProperty(auto_now_add=True)
+
 def Survey_Key(user_email=None):
   """Constructs a datastore key for a Guestbook entity with guestbook_name."""
   return db.Key.from_path('SurveyKey', user_email or 'default')
@@ -117,6 +123,9 @@ class ViewMySurvey(webapp.RequestHandler):
           current_survey_name = survey.survey_name
           status = survey.status
 
+      all_comments_q = CommentRecord.gql("WHERE survey_id = :1 ORDER BY date DESC", self.request.get('group1'))
+      all_comments = all_comments_q.fetch(100)
+
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -130,6 +139,7 @@ class ViewMySurvey(webapp.RequestHandler):
       'survey_name': current_survey_name,
       'survey_id': self.request.get('group1'),
       'status': status,
+      'comments': all_comments,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')
@@ -304,6 +314,13 @@ class RegisterVote(webapp.RequestHandler):
         
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
+
+      current_comment = self.request.get('comments')
+      comment_add = CommentRecord()
+      comment_add.survey_id = current_survey_id
+      comment_add.comment = current_comment
+      comment_add.put()
+
     else:
       url = users.create_login_url(self.request.uri)
       url_linktext = 'Login'
@@ -389,6 +406,10 @@ class ViewAllSurvey(webapp.RequestHandler):
         if(date == str(self.request.get('group1'))):
           current_survey_name = survey.survey_name
 
+      all_comments_q = CommentRecord.gql("WHERE survey_id = :1 ORDER BY date DESC", self.request.get('group1'))
+      all_comments = all_comments_q.fetch(100)
+
+
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
     else:
@@ -400,6 +421,7 @@ class ViewAllSurvey(webapp.RequestHandler):
       'url_linktext': url_linktext,
       'surveys': current_survey,
       'survey_name': current_survey_name,
+      'comments': all_comments,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')

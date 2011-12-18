@@ -1,6 +1,9 @@
 <html>
   <body>
     <H1><center> Survey Elephant </center></H1>
+    <form name="display_current" method="get" action="/">
+    <input type="submit" name="submit" value="Home">
+    </form><br>
     <H2>
     Survey Name:
     {{ survey_name }}
@@ -24,9 +27,14 @@
       {% endfor %}
       <br><br>
     {% endfor %}
-      <br><br>
-    <form name="display_current" method="get" action="/">
-    <input type="submit" name="submit" value="Home">
+    <b>User Comments </b><br><br>
+    {% if comments %}
+      {% for comment in comments %}
+       <b> {{ comment.user.email }} wrote: <br> </b>
+        {{ comment.comment }} <br>
+        - on {{ comment.date }} <br><br>
+      {% endfor %}
+    {% endif %}
     <br><br>
     <a href="{{ url }}">{{ url_linktext }}</a><br>
   </body>
