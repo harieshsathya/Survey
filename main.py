@@ -115,6 +115,7 @@ class ViewMySurvey(webapp.RequestHandler):
         date = str(survey.date)
         if(date == str(self.request.get('group1'))):
           current_survey_name = survey.survey_name
+          status = survey.status
 
       url = users.create_logout_url(self.request.uri)
       url_linktext = 'Logout'
@@ -128,6 +129,7 @@ class ViewMySurvey(webapp.RequestHandler):
       'surveys': current_survey,
       'survey_name': current_survey_name,
       'survey_id': self.request.get('group1'),
+      'status': status,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'display_current_survey.html')
@@ -535,17 +537,33 @@ class AddSurvey(webapp.RequestHandler):
     current_user = users.get_current_user()
     current_survey_name = str(self.request.get('survey_name'))
     if current_user:
-      new_survey = Survey(
-          parent=Survey_Key(current_user.email()),
-          survey_name=current_survey_name
-          )
-      new_survey.put()
-      survey_query = Survey.all().ancestor(Survey_Key(current_user.email())).order('-date')
-      last_survey = survey_query.fetch(1)
-      for survey in last_survey:
-        last_survey_date = survey.date
-      url = users.create_logout_url(self.request.uri)
-      url_linktext = 'Logout'
+      survey_check_q = db.GqlQuery("SELECT  * FROM Survey WHERE survey_name = :1", current_survey_name)
+      survey_check = survey_check_q.fetch(1)
+      if survey_check:
+        url = users.create_logout_url(self.request.uri)
+        url_linktext = 'Logout'
+        template_values = {
+          'url': url,
+          'url_linktext': url_linktext,
+          'error': "Survey Name Already Exists",
+        }
+      
+        path = os.path.join(os.path.dirname(__file__), 'error.html')
+        self.response.out.write(template.render(path, template_values))
+        return
+      
+      else:
+        new_survey = Survey(
+            parent=Survey_Key(current_user.email()),
+            survey_name=current_survey_name
+            )
+        new_survey.put()
+        survey_query = Survey.all().ancestor(Survey_Key(current_user.email())).order('-date')
+        last_survey = survey_query.fetch(1)
+        for survey in last_survey:
+          last_survey_date = survey.date
+        url = users.create_logout_url(self.request.uri)
+        url_linktext = 'Logout'
     else:
       url = users.create_login_url(self.request.uri)
       url_linktext = 'Login'
