@@ -5,15 +5,21 @@
     Survey Name:
     {{ survey_name }}
     </H2>
+    <form name="vote_current" method="get" action="/vote_current">
     {% for survey in surveys %}
       {{ survey.qno }}.
       {{ survey.question }}<br>
       {% for answer in survey.answers %}
+        <input type="radio" name="{{ survey.qno }}" value="{{ answer }}" checked>
         {{ answer }}<br>
       {% endfor %}
       <br><br>
     {% endfor %}
       <br><br>
+
+    <input type="hidden" name="survey_id" value="{{ survey_id }}">
+    <input type="submit" value="Register Vote">
+    </form>
     <form name="display_current" method="get" action="/">
     <input type="submit" name="submit" value="Home">
     <br><br>

@@ -11,7 +11,21 @@
       {% for answer in survey.answers %}
         {{ answer }}<br>
       {% endfor %}
-      <br><br>
+      <br>
+      <b>Result for Question {{ survey.qno }}:<br></b>
+      {% if results %} 
+        {% for result in results %}
+          {% ifequal result.qno survey.qno %}
+            Option 1: {{ result.option1 }}<br>
+            Option 2: {{ result.option2 }}<br>
+            Option 3: {{ result.option3 }}<br>
+            Option 4: {{ result.option4 }}<br>
+          {% endifequal %}
+        {% endfor %}
+      {% else %}
+        <font color="red"> Survey Not Yet Taken!! </font><br><br>
+      {% endif %}
+      <br>
     {% endfor %}
       <br><br>
     <form name="display_current" method="get" action="/">

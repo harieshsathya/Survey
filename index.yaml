@@ -21,3 +21,17 @@ indexes:
   properties:
   - name: date
     direction: desc
+
+- kind: SurveyDesc
+  ancestor: yes
+  properties:
+  - name: survey_id
+    direction: desc
+
+- kind: SurveyDesc
+  ancestor: yes
+  properties:
+  - name: survey_id
+    direction: desc
+  - name: qno
+    direction: desc
