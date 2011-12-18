@@ -1,7 +1,21 @@
 <html>
+  <head>
+    <script type="text/javascript">
+      function validate()
+      {
+        option = document.forms["survey"]["survey_name"].value;
+        if(option == null || option == "")
+        {
+          alert("Need to enter a name for the survey");
+          return false;
+        }
+
+      }
+    </script>
+  </head>
   <body>
     <H1><center> Survey Elephant </center></H1>
-    <form action="/add_survey" method="get">
+    <form name="survey" action="/add_survey" method="get" onsubmit="return validate()">
     Survey Name: <input type="text" name="survey_name" maxlength="500" size="25"><br>
     Expires in (days):
     <select name="expiry">
